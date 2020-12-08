@@ -1,5 +1,7 @@
 package com.luxoft.jva.multithreading.ch06_atomic;
 
+import static java.lang.System.out;
+
 /**
  * In this exercise we will play volatile ping-pong:
  * <ul>
@@ -26,8 +28,84 @@ package com.luxoft.jva.multithreading.ch06_atomic;
  */
 public class Exercise12 {
 
+	public static final int MAXHOP = 10_000_000;
 	public static void main(String[] args) {
-		// your code goes here
+		Ball ball = new Ball();
+
+		Thread ping = new Thread(new Ping(ball));
+		Thread pong = new Thread(new Pong(ball));
+
+		ping.setName("ping");
+		pong.setName("pong");
+
+		ping.start();
+		pong.start();
+		try
+		{
+			ping.join();
+			pong.join();
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+
+		out.println("ping " + ball.ping + ", pong " + ball.pong);
+	}
+	static class Ball
+	{
+		//		public int ping = -1;
+//		public int pong = -1;
+		public volatile int ping = -1;
+		public volatile int pong = -1;
+	}
+
+	static class Ping implements Runnable
+	{
+
+		private final Ball ball;
+
+		Ping(Ball ball)
+		{
+			this.ball = ball;
+		}
+
+		@Override
+		public void run()
+		{
+			for (int i = 0; i < MAXHOP; i++)
+			{
+				ball.ping = i;
+				while (i != ball.pong)
+				{
+					// Thread.yield();
+				}
+			}
+		}
+	}
+
+	static class Pong implements Runnable
+	{
+
+		private final Ball ball;
+
+		Pong(Ball ball)
+		{
+			this.ball = ball;
+		}
+
+		@Override
+		public void run()
+		{
+			for (int i = 0; i < MAXHOP; i++)
+			{
+				while (ball.ping != i)
+				{
+					// Thread.yield();
+				}
+				ball.pong = i;
+			}
+		}
 	}
 
 }
