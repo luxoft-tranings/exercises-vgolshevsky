@@ -1,4 +1,6 @@
 package com.luxoft.jva.multithreading.ch08_locks_and_semaphores;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * TODO
@@ -7,7 +9,6 @@ package com.luxoft.jva.multithreading.ch08_locks_and_semaphores;
  */
 public class Ex18LostUpdate
 {
-
     public static void main(String[] args) throws InterruptedException
     {
         Amount amount = new Amount(1000L);
@@ -28,22 +29,28 @@ public class Ex18LostUpdate
 
     private static class Amount
     {
+        ReentrantLock lock = new ReentrantLock();
         private long value;
 
         public Amount(long value)
         {
+            lock.lock();
             this.value = value;
+            lock.unlock();
         }
 
         public void deposit(long amount)
         {
-
+            lock.lock();
             value += amount;
+            lock.unlock();
         }
 
         public void withdraw(long amount)
         {
+            lock.lock();
             deposit(-amount);
+            lock.unlock();
         }
 
         public long getBalance()
